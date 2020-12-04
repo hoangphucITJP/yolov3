@@ -8,6 +8,7 @@ import random
 import re
 import subprocess
 import time
+import zipfile
 from pathlib import Path
 
 import cv2
@@ -84,7 +85,12 @@ def check_dataset(dict):
                 if s.startswith('http') and s.endswith('.zip'):  # URL
                     f = Path(s).name  # filename
                     torch.hub.download_url_to_file(s, f)
-                    r = os.system('unzip -q %s -d ../ && rm %s' % (f, f))  # unzip
+
+                    with zipfile.ZipFile(f, 'r') as zip_ref:
+                        zip_ref.extractall()
+                    
+                    os.remove(f)
+                    r = 0
                 else:  # bash script
                     r = os.system(s)
                 print('Dataset autodownload %s\n' % ('success' if r == 0 else 'failure'))  # analyze return value
